@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>mySelf • Daily Tracker</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Quicksand', sans-serif;
+      background: #0d0a14;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 12px;
+    }
+    .app-container {
+      max-width: 420px;
+      width: 100%;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 48px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      overflow: hidden;
+      padding: 20px 16px 28px;
+      border: 1px solid rgba(255,255,255,0.1);
+      min-height: 580px;
+    }
+
+    /* BUMPER */
+    .bumper {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(160deg, #0d0a14 0%, #1a1225 40%, #0d0a14 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      overflow: hidden;
+    }
+    .bumper.hide {
+      opacity: 0;
+      transform: scale(1.05);
+      pointer-events: none;
+    }
+    .bumper-bg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+    }
+    .bumper-bg .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      animation: orbFloat 8s ease-in-out infinite alternate;
+    }
+    .bumper-bg .orb:nth-child(1) {
+      width: 300px;
+      height: 300px;
+      background: rgba(161, 140, 209, 0.15);
+      top: -80px;
+      left: -80px;
+      animation-delay: 0s;
+    }
+    .bumper-bg .orb:nth-child(2) {
+      width: 250px;
+      height: 250px;
+      background: rgba(120, 80, 200, 0.12);
+      bottom: -60px;
+      right: -60px;
+      animation-delay: 2s;
+    }
+    .bumper-bg .orb:nth-child(3) {
+      width: 200px;
+      height: 200px;
+      background: rgba(200, 150, 220, 0.08);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: 4s;
+    }
+    @keyframes orbFloat {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(30px, -30px) scale(1.2); }
+    }
+    .bumper-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      animation: bumperIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes bumperIn {
+      0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .bumper-logo {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 48px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -1px;
+      text-shadow: 0 4px 40px rgba(161, 140, 209, 0.15);
+      margin-bottom: 4px;
+    }
+    .bumper-sub {
+      font-weight: 300;
+      font-size: 12px;
+      color: rgba(255,255,255,0.3);
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+    .bumper-loader-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .bumper-loader-bar {
+      width: 120px;
+      height: 2px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .bumper-loader-bar .fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #a18cd1, #c792d4);
+      border-radius: 10px;
+      animation: loadBar 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @keyframes loadBar {
+      0% { width: 0%; }
+      50% { width: 70%; }
+      100% { width: 100%; }
+    }
+    .bumper-credit {
+      position: absolute;
+      bottom: 32px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.12);
+      letter-spacing: 2px;
+      font-weight: 300;
+      z-index: 2;
+    }
+
+    /* DEMO */
+    .demo-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(13, 10, 20, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .demo-overlay.show { display: flex; animation: fadeSlideUp 0.4s ease; }
+    .demo-box {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      max-width: 380px;
+      width: 100%;
+      border-radius: 40px;
+      padding: 32px 24px;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .demo-box h3 {
+      font-family: 'Quicksand', sans-serif;
+      color: #2d1b3d;
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+    .demo-box .demo-sub {
+      color: #b8a0d0;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .demo-step {
+      background: rgba(161, 140, 209, 0.06);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin: 8px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      border-left: 3px solid #a18cd1;
+    }
+    .demo-step .step-num {
+      background: linear-gradient(135deg, #a18cd1, #c792d4);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .demo-step .step-text {
+      font-size: 13px;
+      color: #2d1b3d;
+      line-height: 1.4;
+    }
+    .demo-step .step-text small {
+      color: #b8a0d0;
+      font-size: 11px;
+    }
+    .demo-close {
+      background: linear-gradient(135deg, #a18cd1, #c792d4);
+      border: none;
+      border-radius: 60px;
+      padding: 14px;
+      color: white;
+      font-weight: 700;
+      font-size: 15px;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 12px;
+      font-family: 'Quicksand', sans-serif;
+      transition: 0.2s;
+    }
+    .demo-close:active { transform: scale(0.96); }
+
+    /* SHUTDOWN */
+    .shutdown-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #0d0a14;
+      z-index: 99999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .shutdown-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .shutdown-overlay .shutdown-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(255,255,255,0.15);
+      font-size: 14px;
+      letter-spacing: 4px;
+      font-weight: 300;
+      animation: pulseText 1.2s ease-in-out infinite;
+    }
+    @keyframes pulseText {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 0.8; }
+    }
+
+    /* TRANSISI */
+    .page {
+      animation: fadeSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes fadeSlideUp {
+      0% { opacity: 0; transform: translateY(18px) scale(0.97); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes fadeSlideDown {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-18px) scale(0.97); }
+    }
+    .page-exit {
+      animation: fadeSlideDown 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* MENU */
+    .menu-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      padding: 0 2px;
+    }
+    .menu-header h2 {
+      font-family: 'Quicksand', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #2d1b3d;
+      letter-spacing: -0.5px;
+    }
+    .menu-header .sub-gold {
+      font-size: 10px;
+      color: #b8a0d0;
+      letter-spacing: 2px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .divider {
+      width: 50px;
+      height: 3px;
+      background: linear-gradient(90deg, #a18cd1, #c792d4);
+      border-radius: 10px;
+      margin: 2px 0 12px;
+    }
+
+    .btn-close-app {
+      background: rgba(161, 140, 209, 0.08);
+      border: 1.5px solid rgba(200, 180, 220, 0.15);
+      color: #7a5fa0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 16px;
+    }
+    .btn-close-app:active {
+      transform: scale(0.9);
+      background: rgba(217, 79, 79, 0.12);
+      border-color: rgba(217, 79, 79, 0.3);
+      color: #d94f4f;
+    }
+
+    .btn-elegant {
+      background: linear-gradient(135deg, #a18cd1, #c792d4);
+      border: none;
+      border-radius: 60px;
+      padding: 16px 28px;
+      font-family: 'Quicksand', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: white;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 8px 28px rgba(161, 140, 209, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-elegant:active { transform: scale(0.96); }
+
+    .btn-danger {
+      background: rgba(217, 79, 79, 0.12);
+      color: #d94f4f;
+      border: 1px solid rgba(217, 79, 79, 0.2);
+      border-radius: 40px;
+      padding: 4px 14px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Quicksand', sans-serif;
+      transition: 0.2s;
+    }
+    .btn-danger:active { background: rgba(217, 79, 79, 0.2); transform: scale(0.95); }
+
+    .record-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 14px 0 8px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .record-item {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 14px 16px;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid rgba(200, 180, 220, 0.2);
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 2px 12px rgba(161, 140, 209, 0.06);
+    }
+    .record-item:active { background: rgba(161, 140, 209, 0.08); }
+    .record-item .nama-daftar {
+      font-weight: 600;
+      color: #2d1b3d;
+      font-size: 15px;
+    }
+    .record-item .badge-status {
+      padding: 4px 14px;
+      border-radius: 40px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .badge-cukup { background: #d4f0e8; color: #1a7a6e; }
+    .badge-kurang_sedikit { background: #fef3d7; color: #b87a2a; }
+    .badge-kurang_banyak { background: #fde8e8; color: #c94f4f; }
+    .record-item .item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #b8a0d0;
+      padding: 28px 0;
+      font-weight: 400;
+      background: rgba(255,255,255,0.5);
+      border-radius: 28px;
+      border: 1.5px dashed rgba(161, 140, 209, 0.2);
+      font-style: italic;
+      font-size: 14px;
+    }
+
+    /* FORM */
+    .form-detail { display: none; margin-top: 10px; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 20px 16px; border-radius: 32px; border: 1px solid rgba(255,255,255,0.5); }
+    .form-detail.active { display: block; animation: fadeSlideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      margin: 10px 0;
+      align-items: center;
+    }
+    .form-row label {
+      min-width: 60px;
+      font-weight: 600;
+      color: #4a2d5e;
+      font-size: 13px;
+    }
+    .form-row input, .form-row select {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 40px;
+      border: 1.5px solid rgba(200, 180, 220, 0.3);
+      background: rgba(255,255,255,0.8);
+      min-width: 100px;
+      font-size: 14px;
+      transition: 0.2s;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .form-row input:focus, .form-row select:focus {
+      border-color: #a18cd1;
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(161, 140, 209, 0.12);
+    }
+    .form-row .optional { color: #b8a0d0; font-size: 11px; font-weight: 400; margin-left: 2px; }
+    .form-row .time-input { width: 100px; flex: 0 0 auto; }
+
+    .nav-arrow {
+      background: linear-gradient(135deg, #a18cd1, #c792d4);
+      color: white;
+      border: none;
+      border-radius: 60px;
+      padding: 12px 22px;
+      font-size: 14px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0 4px;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(161, 140, 209, 0.2);
+      transition: 0.25s;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .nav-arrow:active { transform: scale(0.96); }
+    .nav-arrow-secondary {
+      background: rgba(161, 140, 209, 0.1);
+      color: #7a5fa0;
+      box-shadow: none;
+      border: 1.5px solid rgba(161, 140, 209, 0.15);
+    }
+
+    /* MAKANAN */
+    .food-entry {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 24px;
+      padding: 10px 14px;
+      margin: 6px 0;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      border: 1px solid rgba(200, 180, 220, 0.2);
+    }
+    .food-entry input { flex: 1 1 80px; padding: 6px 12px; border-radius: 40px; border: 1.5px solid rgba(200, 180, 220, 0.2); background: white; font-family: 'Quicksand', sans-serif; }
+    .food-entry select { padding: 6px 10px; border-radius: 40px; border: 1.5px solid rgba(200, 180, 220, 0.2); background: white; font-family: 'Quicksand', sans-serif; }
+    .btn-add-food {
+      background: linear-gradient(135deg, #a18cd1, #c792d4);
+      color: white;
+      border: none;
+      border-radius: 40px;
+      padding: 6px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .btn-add-food:active { transform: scale(0.94); }
+    .btn-remove-food { background: #e8d5e8; color: #7a5fa0; }
+    .btn-add-big {
+      background: transparent;
+      border: 1.5px dashed #a18cd1;
+      color: #7a5fa0;
+      border-radius: 60px;
+      padding: 10px 20px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 6px 0;
+      transition: 0.2s;
+      font-family: 'Quicksand', sans-serif;
+    }
+    .btn-add-big:active { background: rgba(161, 140, 209, 0.08); transform: scale(0.96); }
+
+    /* RINGKASAN HARIAN */
+    .daily-summary {
+      background: rgba(255,255,255,0.6);
+      border-radius: 20px;
+      padding: 14px 16px;
+      margin: 10px 0;
+      border: 1px solid rgba(200, 180, 220, 0.15);
+    }
+    .daily-summary .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .daily-summary .summary-item {
+      text-align: center;
+      background: rgba(255,255,255,0.5);
+      border-radius: 12px;
+      padding: 6px 4px;
+    }
+    .daily-summary .summary-item .val {
+      font-weight: 700;
+      font-size: 14px;
+      color: #2d1b3d;
+    }
+    .daily-summary .summary-item .label {
+      font-size: 9px;
+      color: #b8a0d0;
+      text-transform: uppercase;
+    }
+    .daily-summary .summary-status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* GRAFIK */
+    .chart-container {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 16px;
+      margin: 12px 0;
+      border: 1px solid rgba(255,255,255,0.5);
+    }
+    .chart-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #4a2d5e;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .chart-title span { font-weight: 400; color: #b8a0d0; font-size: 11px; }
+    .chart-multi {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .chart-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .chart-row .chart-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #4a2d5e;
+      width: 32px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .chart-row .chart-line-wrap {
+      flex: 1;
+      height: 28px;
+      background: rgba(200, 180, 220, 0.08);
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+    }
+    .chart-row .chart-line-fill {
+      height: 100%;
+      border-radius: 20px;
+      transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 6px;
+      font-size: 9px;
+      font-weight: 700;
+      color: white;
+      min-width: 20px;
+    }
+    .chart-line-fill.green { background: linear-gradient(90deg, #4ecdc4, #44b39d); }
+    .chart-line-fill.yellow { background: linear-gradient(90deg, #ffd93d, #f5b342); }
+    .chart-line-fill.red { background: linear-gradient(90deg, #ff6b6b, #d94f4f); }
+    .chart-line-fill.purple { background: linear-gradient(90deg, #a18cd1, #7c5fbf); }
+
+    .chart-indicator {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 10px;
+      font-size: 10px;
+      color: #7a5fa0;
+    }
+    .chart-indicator span { display: flex; align-items: center; gap: 4px; }
+    .chart-indicator .dot-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    /* RIWAYAT */
+    .history-list { max-height: 220px; overflow-y: auto; margin: 10px 0; }
+    .history-item {
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-radius: 20px;
+      padding: 12px 16px;
+      margin: 6px 0;
+      border-left: 4px solid #a18cd1;
+      box-shadow: 0 2px 12px rgba(161, 140, 209, 0.06);
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .history-item:active { background: rgba(161, 140, 209, 0.06); }
+    .history-item .h-tanggal { font-weight: 600; color: #2d1b3d; font-size: 13px; }
+    .history-item .h-status {
+      font-size: 10px;
+      padding: 2px 12px;
+      border-radius: 40px;
+      display: inline-block;
+      font-weight: 600;
+    }
+    .status-cukup { background: #d4f0e8; color: #1a7a6e; }
+    .status-kurang_sedikit { background: #fef3d7; color: #b87a2a; }
+    .status-kurang_banyak { background: #fde8e8; color: #c94f4f; }
+
+    /* STREAK */
+    .reward-streak {
+      background: linear-gradient(135deg, #fde8c8, #fccf9c);
+      border-radius: 60px;
+      padding: 14px 20px;
+      font-weight: 700;
+      color: #8f5f1a;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+      justify-content: center;
+      margin: 10px 0;
+      font-family: 'Quicksand', sans-serif;
+      transition: 0.3s;
+    }
+    .reward-streak:active { transform: scale(0.96); }
+    .reward-streak .fire-icon {
+      display: inline-block;
+      animation: fireDance 0.6s ease-in-out infinite alternate;
+      font-size: 26px;
+    }
+    @keyframes fireDance {
+      0% { transform: rotate(-8deg) scale(1); }
+      100% { transform: rotate(8deg) scale(1.15); }
+    }
+
+    /* REKOMENDASI */
+    #rekomendasiContainer { display: none; }
+    #rekomendasiContainer.show { display: block; }
+    .rekomendasi-item {
+      background: rgba(255,255,255,0.6);
+      border-radius: 16px;
+      padding: 10px 14px;
+      margin: 6px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(200, 180, 220, 0.15);
+      transition: 0.2s;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+    .rekomendasi-item:active { 
+      background: rgba(161, 140, 209, 0.08);
+      transform: scale(0.98);
+    }
+    .rekomendasi-item .reco-icon {
+      font-size: 32px;
+      width: 44px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .rekomendasi-item .reco-info {
+      flex: 1;
+    }
+    .rekomendasi-item .reco-info .reco-name {
+      font-weight: 600;
+      color: #2d1b3d;
+      font-size: 14px;
+    }
+    .rekomendasi-item .reco-info .reco-defisit {
+      font-size: 12px;
+      color: #d94f4f;
+      font-weight: 500;
+    }
+    .rekomendasi-item .reco-info .reco-saran {
+      font-size: 12px;
+      color: #4a2d5e;
+      margin-top: 2px;
+    }
+
+    .hidden { display: none !important; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .gap-8 { gap: 8px; }
+    .mt-2 { margin-top: 12px; }
+    .text-center { text-align: center; }
+    .italic { font-style: italic; }
+
+    @media (max-width: 440px) {
+      .app-container { padding: 16px 12px 20px; border-radius: 32px; }
+      .menu-header h2 { font-size: 20px; }
+      .bumper-logo { font-size: 38px; }
+      .btn-close-app { width: 36px; height: 36px; font-size: 14px; }
+      .daily-summary .summary-grid { grid-template-columns: 1fr 1fr; }
+    }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #c8b0e0; border-radius: 20px; }
+  </style>
+</head>
+<body>
+
+<!-- SHUTDOWN -->
+<div class="shutdown-overlay" id="shutdownOverlay">
+  <div class="shutdown-text">✦ menutup aplikasi ✦</div>
+</div>
+
+<!-- BUMPER -->
+<div class="bumper" id="bumper">
+  <div class="bumper-bg">
+    <div class="orb"></div>
+    <div class="orb"></div>
+    <div class="orb"></div>
+  </div>
+  <div class="bumper-content">
+    <div class="bumper-logo">mySelf</div>
+    <div class="bumper-sub">✦ daily tracker ✦</div>
+    <div class="bumper-loader-wrap">
+      <div class="bumper-loader-bar"><div class="fill"></div></div>
+    </div>
+  </div>
+  <div class="bumper-credit">kempot 2026</div>
+</div>
+
+<!-- DEMO -->
+<div class="demo-overlay" id="demoOverlay">
+  <div class="demo-box">
+    <h3>👋 Selamat datang di mySelf!</h3>
+    <div class="demo-sub">Panduan singkat untuk memulai</div>
+    <div class="demo-step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>Tambah daftar baru</strong><br><small>Klik tombol "Tambahkan daftar baru" untuk mulai tracking</small></div>
+    </div>
+    <div class="demo-step">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>Catat makanan harian</strong><br><small>Setiap kali makan, tambahkan makanan - akan terakumulasi dalam 1 hari</small></div>
+    </div>
+    <div class="demo-step">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>Lihat status harian</strong><br><small>Status 🟢/🟡/🔴 menunjukkan apakah gizi hari itu terpenuhi</small></div>
+    </div>
+    <div class="demo-step">
+      <div class="step-num">4</div>
+      <div class="step-text"><strong>Pantau tren & streak</strong><br><small>Grafik menunjukkan perkembangan selama 30 hari</small></div>
+    </div>
+    <button class="demo-close" id="demoClose">Mulai gunakan!</button>
+  </div>
+</div>
+
+<div class="app-container" id="appContainer">
+  <!-- MENU -->
+  <div id="menuView" class="page">
+    <div class="menu-header">
+      <div><h2>mySelf</h2></div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="sub-gold">✦ daily</div>
+        <button class="btn-close-app" id="btnCloseApp"><i class="fas fa-power-off"></i></button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div style="margin: 14px 0 12px;">
+      <button class="btn-elegant" id="btnTambahDaftar"><i class="fas fa-plus-circle"></i> Tambahkan daftar baru</button>
+    </div>
+    <div style="font-size: 12px; color: #b8a0d0; text-align: center; font-style: italic; margin-bottom: 6px;">
+      <i class="fas fa-chevron-down"></i> daftar tersimpan
+    </div>
+    <div id="recordListContainer" class="record-list">
+      <div class="empty-state"><i class="fas fa-user-plus"></i> Belum ada daftar</div>
+    </div>
+    <div style="margin-top: 10px; font-size: 12px; color: #b8a0d0; text-align: center; font-style: italic;">klik nama untuk buka</div>
+  </div>
+
+  <!-- MODAL TAMBAH -->
+  <div class="modal-overlay" id="modalDaftar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(13,10,20,0.5); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); justify-content:center; align-items:center; z-index:999; animation:fadeSlideUp 0.3s ease;">
+    <div style="background:rgba(255,255,255,0.95); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); max-width:360px; width:90%; border-radius:44px; padding:28px 22px 32px; box-shadow:0 30px 50px rgba(0,0,0,0.1); border:1px solid rgba(255,255,255,0.3);">
+      <h3 style="font-family:'Quicksand',sans-serif; color:#2d1b3d; margin-bottom:18px;"><i class="fas fa-user-plus" style="color:#a18cd1; margin-right:10px;"></i>Daftar baru</h3>
+      <label style="font-weight:600; color:#4a2d5e; font-size:14px; display:block; margin:12px 0 4px;">Nama orang</label>
+      <input type="text" id="inputNamaDaftar" placeholder="contoh: Andi" value="Andi" style="width:100%; padding:12px 14px; border-radius:60px; border:1.5px solid rgba(200,180,220,0.3); background:rgba(255,255,255,0.8); font-size:15px; outline:none; font-family:'Quicksand',sans-serif;">
+      <div style="display:flex; gap:12px; margin-top:24px; justify-content:flex-end;">
+        <button id="btnBatalDaftar" style="padding:12px 26px; border-radius:60px; border:none; font-weight:600; background:rgba(161,140,209,0.08); color:#7a5fa0; cursor:pointer; font-family:'Quicksand',sans-serif;">Batal</button>
+        <button id="btnSimpanDaftar" style="padding:12px 26px; border-radius:60px; border:none; font-weight:600; background:linear-gradient(135deg,#a18cd1,#c792d4); color:white; cursor:pointer; box-shadow:0 4px 16px rgba(161,140,209,0.3); font-family:'Quicksand',sans-serif;">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORM IDENTITAS -->
+  <div id="formDetailView" class="form-detail">
+    <div class="flex-between"><h4 style="font-family:'Quicksand',sans-serif; color:#2d1b3d;"><i class="fas fa-id-card" style="color:#a18cd1;"></i> Identitas</h4><span id="labelNamaDaftar" style="background:rgba(161,140,209,0.12); padding:4px 18px; border-radius:40px; font-size:13px; color:#7a5fa0;"></span></div>
+    
+    <div class="form-row"><label>Nama</label><input id="fNama" placeholder="Nama lengkap" value="Andi"></div>
+    <div class="form-row">
+      <label>Tanggal</label>
+      <input id="fTanggal" type="date" value="2026-06-22" style="flex:1;">
+      <label style="min-width:30px;">Jam</label>
+      <input id="fJam" type="time" class="time-input" style="flex:0 0 auto; width:100px;">
+    </div>
+    
+    <div style="font-size:13px; font-weight:600; color:#4a2d5e; margin:12px 0 6px;"><i class="fas fa-ruler" style="color:#a18cd1;"></i> Antropometri</div>
+    <div class="form-row"><label>TB (cm)</label><input id="fTb" type="number" placeholder="170" value="170"></div>
+    <div class="form-row"><label>BB (kg)</label><input id="fBb" type="number" placeholder="65" value="65"></div>
+    <div class="form-row"><label>LILA (cm) <span class="optional">opsional</span></label><input id="fLila" type="number" placeholder="25" value=""></div>
+    <div class="form-row"><label>Lingkar Kepala (cm) <span class="optional">opsional</span></label><input id="fKepala" type="number" placeholder="48" value=""></div>
+    
+    <div class="form-row"><label>Umur</label><input id="fUmur" type="number" placeholder="25" value="25"></div>
+    <div class="form-row"><label>JK</label><select id="fJk"><option value="L">Laki-laki</option><option value="P">Perempuan</option></select></div>
+    
+    <button class="nav-arrow" id="btnKeFormMakan"><i class="fas fa-utensils"></i> Lanjut ke makanan</button>
+  </div>
+
+  <!-- FORM MAKANAN -->
+  <div id="formMakanView" class="form-detail">
+    <div class="flex-between">
+      <h4 style="font-family:'Quicksand',sans-serif; color:#2d1b3d;"><i class="fas fa-utensil-spoon" style="color:#a18cd1;"></i> Tambah Makanan</h4>
+      <span id="foodCountBadge" style="font-size:12px; color:#b8a0d0;">0 makanan</span>
+    </div>
+    <div id="foodListContainer"></div>
+    <button class="btn-add-big" id="btnTambahMakanan"><i class="fas fa-plus-circle"></i> Tambah makanan</button>
+    <button class="nav-arrow" id="btnKeMinum"><i class="fas fa-tint"></i> Lanjut ke minum</button>
+    <button class="nav-arrow nav-arrow-secondary" id="btnKembaliIdentitas"><i class="fas fa-arrow-left"></i> Kembali</button>
+  </div>
+
+  <!-- FORM MINUM -->
+  <div id="formMinumView" class="form-detail">
+    <h4 style="font-family:'Quicksand',sans-serif; color:#2d1b3d;"><i class="fas fa-glass-water" style="color:#a18cd1;"></i> Intake air</h4>
+    <div class="form-row"><label>Air (ml)</label><input id="fMinum" type="number" placeholder="500" value="600"></div>
+    <button class="nav-arrow" id="btnSimpanData"><i class="fas fa-save"></i> Tambahkan ke hari ini</button>
+    <button class="nav-arrow nav-arrow-secondary" id="btnKembaliMakanan"><i class="fas fa-arrow-left"></i> Kembali</button>
+  </div>
+
+  <!-- RIWAYAT HARIAN -->
+  <div id="riwayatView" class="form-detail">
+    <div class="flex-between">
+      <h4 style="font-family:'Quicksand',sans-serif; color:#2d1b3d;"><i class="fas fa-history" style="color:#a18cd1;"></i> Riwayat <span id="riwayatNama" style="font-size:14px; background:rgba(161,140,209,0.12); padding:2px 14px; border-radius:40px; color:#7a5fa0;"></span></h4>
+      <button class="btn-elegant" style="padding:10px 18px; width:auto; font-size:13px;" id="btnTambahRiwayat"><i class="fas fa-plus"></i> Tambah</button>
+    </div>
+
+    <!-- RINGKASAN HARIAN -->
+    <div id="dailySummary" class="daily-summary">
+      <div class="flex-between">
+        <span style="font-weight:600; font-size:14px; color:#2d1b3d;">📊 Ringkasan Hari Ini</span>
+        <span id="dailyDate" style="font-size:12px; color:#b8a0d0;"></span>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-item"><div class="val" id="sumKalori">0</div><div class="label">Kalori</div></div>
+        <div class="summary-item"><div class="val" id="sumProtein">0</div><div class="label">Protein</div></div>
+        <div class="summary-item"><div class="val" id="sumSerat">0</div><div class="label">Serat</div></div>
+        <div class="summary-item"><div class="val" id="sumKalsium">0</div><div class="label">Kalsium</div></div>
+      </div>
+      <div class="summary-status" id="dailyStatus">
+        <span>Status: </span>
+        <span id="statusBadge" style="padding:4px 16px; border-radius:40px; font-size:13px;">Belum ada data</span>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <div class="chart-title">Tren 30 Hari <span>rata-rata 7 hari terakhir</span></div>
+      <div class="chart-multi" id="chartMulti">
+        <div class="chart-row">
+          <div class="chart-label">BMI</div>
+          <div class="chart-line-wrap">
+            <div class="chart-line-fill green" id="chartBMI" style="width:0%;">--</div>
+          </div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label">LILA</div>
+          <div class="chart-line-wrap">
+            <div class="chart-line-fill purple" id="chartLILA" style="width:0%;">--</div>
+          </div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-label">LK</div>
+          <div class="chart-line-wrap">
+            <div class="chart-line-fill yellow" id="chartLK" style="width:0%;">--</div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-indicator">
+        <span><span class="dot-indicator" style="background:#4ecdc4;"></span> Normal</span>
+        <span><span class="dot-indicator" style="background:#ffd93d;"></span> Sedang</span>
+        <span><span class="dot-indicator" style="background:#ff6b6b;"></span> Kurang</span>
+      </div>
+    </div>
+
+    <!-- STREAK -->
+    <div id="streakRiwayat" class="reward-streak hidden">
+      <span class="fire-icon">🔥</span>
+      <span id="streakRiwayatText">Streak: 0 hari</span>
+    </div>
+
+    <div id="historyListContainer" class="history-list">
+      <div class="empty-state" style="padding:20px;"><i class="fas fa-clock"></i> Belum ada riwayat</div>
+    </div>
+
+    <button class="nav-arrow nav-arrow-secondary" style="margin-top:14px; width:100%;" id="btnKembaliMenuRiwayat"><i class="fas fa-home"></i> Kembali ke menu</button>
+  </div>
+
+  <!-- HASIL DETAIL -->
+  <div id="hasilView" class="result-panel hidden" style="background:rgba(255,255,255,0.7); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:32px; padding:20px 16px; margin-top:10px; border:1px solid rgba(255,255,255,0.5); animation:fadeSlideUp 0.35s ease;">
+    <div class="flex-between">
+      <span style="font-weight:600; color:#2d1b3d;"><i class="fas fa-chart-line" style="color:#a18cd1;"></i> Detail Hari</span>
+      <span id="namaOrangHasil" style="background:rgba(161,140,209,0.12); padding:2px 16px; border-radius:40px; font-size:13px; color:#7a5fa0;"></span>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px 14px; margin:12px 0;">
+      <div style="background:rgba(255,255,255,0.6); border-radius:60px; padding:8px 12px; font-size:13px;"><b>IMT</b> <span id="hasilImt">-</span></div>
+      <div style="background:rgba(255,255,255,0.6); border-radius:60px; padding:8px 12px; font-size:13px;"><b>Kalori</b> <span id="hasilKalori">-</span> kcal</div>
+      <div style="background:rgba(255,255,255,0.6); border-radius:60px; padding:8px 12px; font-size:13px;"><b>Protein</b> <span id="hasilProtein">-</span> g</div>
+      <div style="background:rgba(255,255,255,0.6); border-radius:60px; padding:8px 12px; font-size:13px;"><b>Serat</b> <span id="hasilSerat">-</span> g</div>
+    </div>
+    
+    <div style="background:rgba(161,140,209,0.06); border-radius:24px; padding:12px; margin:8px 0; border-left:3px solid #a18cd1;">
+      <i class="fas fa-lightbulb" style="color:#a18cd1;"></i> <strong>Rekomendasi:</strong> <span id="teksRekomendasiAI"></span>
+    </div>
+    
+    <div id="rekomendasiContainer" style="margin-top:12px;">
+      <div style="font-weight:600; color:#4a2d5e; margin-bottom:8px; font-size:13px;">
+        <i class="fas fa-utensils" style="color:#a18cd1;"></i> Daftar Makanan yang Dibutuhkan:
+      </div>
+      <div id="rekomendasiList"></div>
+    </div>
+    
+    <button class="nav-arrow nav-arrow-secondary" style="width:100%; margin-top:12px;" id="btnKembaliRiwayat">
+      <i class="fas fa-arrow-left"></i> Kembali ke riwayat
+    </button>
+  </div>
+</div>
+
+<script>
+  (function(){
+    "use strict";
+    
+    // ========== SHUTDOWN ==========
+    function closeApp() {
+      var overlay = document.getElementById('shutdownOverlay');
+      overlay.classList.add('active');
+      setTimeout(function() {
+        try { window.close(); } catch(e) {}
+        setTimeout(function() {
+          if (!window.closed) {
+            try { window.location.href = 'about:blank'; } catch(e2) {
+              alert('Tekan tombol home untuk keluar.');
+              overlay.classList.remove('active');
+            }
+          }
+        }, 500);
+      }, 900);
+    }
+    document.getElementById('btnCloseApp').addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (confirm('Tutup aplikasi mySelf?')) closeApp();
+    });
+
+    // ========== BUMPER ==========
+    setTimeout(function() {
+      document.getElementById('bumper').classList.add('hide');
+      setTimeout(function() {
+        document.getElementById('bumper').style.display = 'none';
+        if (!localStorage.getItem('mySelfDemoShown')) {
+          document.getElementById('demoOverlay').classList.add('show');
+          localStorage.setItem('mySelfDemoShown', 'true');
+        }
+      }, 800);
+    }, 2400);
+
+    document.getElementById('demoClose').addEventListener('click', function() {
+      document.getElementById('demoOverlay').classList.remove('show');
+    });
+
+    // ========== STANDAR GIZI (Permenkes No.28 Th 2019) ==========
+    var AKG = {
+      '0-5': { L: { energi: 550, protein: 9, serat: 0, kalsium: 200, air: 700 },
+               P: { energi: 550, protein: 9, serat: 0, kalsium: 200, air: 700 } },
+      '6-11': { L: { energi: 800, protein: 15, serat: 11, kalsium: 270, air: 900 },
+                P: { energi: 800, protein: 15, serat: 11, kalsium: 270, air: 900 } },
+      '1-3': { L: { energi: 1350, protein: 20, serat: 19, kalsium: 650, air: 1150 },
+               P: { energi: 1350, protein: 20, serat: 19, kalsium: 650, air: 1150 } },
+      '4-6': { L: { energi: 1400, protein: 25, serat: 20, kalsium: 1000, air: 1450 },
+               P: { energi: 1400, protein: 25, serat: 20, kalsium: 1000, air: 1450 } },
+      '7-9': { L: { energi: 1650, protein: 40, serat: 23, kalsium: 1000, air: 1650 },
+               P: { energi: 1650, protein: 40, serat: 23, kalsium: 1000, air: 1650 } },
+      '10-12': { L: { energi: 2000, protein: 50, serat: 28, kalsium: 1200, air: 1850 },
+                 P: { energi: 1900, protein: 55, serat: 27, kalsium: 1200, air: 1850 } },
+      '13-15': { L: { energi: 2400, protein: 70, serat: 34, kalsium: 1200, air: 2100 },
+                 P: { energi: 2050, protein: 65, serat: 29, kalsium: 1200, air: 2100 } },
+      '16-18': { L: { energi: 2650, protein: 75, serat: 37, kalsium: 1200, air: 2300 },
+                 P: { energi: 2100, protein: 65, serat: 29, kalsium: 1200, air: 2150 } },
+      '19-29': { L: { energi: 2650, protein: 65, serat: 37, kalsium: 1100, air: 2500 },
+                 P: { energi: 2250, protein: 60, serat: 32, kalsium: 1100, air: 2350 } },
+      '30-49': { L: { energi: 2550, protein: 65, serat: 36, kalsium: 1100, air: 2500 },
+                 P: { energi: 2150, protein: 60, serat: 30, kalsium: 1100, air: 2350 } },
+      '50-64': { L: { energi: 2150, protein: 65, serat: 30, kalsium: 1100, air: 2500 },
+                 P: { energi: 1800, protein: 60, serat: 25, kalsium: 1100, air: 2350 } },
+      '65-80': { L: { energi: 1800, protein: 64, serat: 25, kalsium: 1100, air: 1800 },
+                 P: { energi: 1550, protein: 58, serat: 22, kalsium: 1100, air: 1550 } },
+      '80+': { L: { energi: 1600, protein: 64, serat: 22, kalsium: 1100, air: 1600 },
+               P: { energi: 1400, protein: 58, serat: 20, kalsium: 1100, air: 1400 } }
+    };
+
+    function getAKG(umur, jk) {
+      if (umur < 0.5) return AKG['0-5'][jk];
+      if (umur < 1) return AKG['6-11'][jk];
+      if (umur < 3) return AKG['1-3'][jk];
+      if (umur < 6) return AKG['4-6'][jk];
+      if (umur < 9) return AKG['7-9'][jk];
+      if (umur < 12) return AKG['10-12'][jk];
+      if (umur < 15) return AKG['13-15'][jk];
+      if (umur < 18) return AKG['16-18'][jk];
+      if (umur < 29) return AKG['19-29'][jk];
+      if (umur < 49) return AKG['30-49'][jk];
+      if (umur < 64) return AKG['50-64'][jk];
+      if (umur < 80) return AKG['65-80'][jk];
+      return AKG['80+'][jk];
+    }
+
+    function getStatus(actual, need) {
+      if (!need || need === 0) return 'cukup';
+      var ratio = actual / need;
+      if (ratio >= 0.85) return 'cukup';
+      if (ratio >= 0.60) return 'kurang_sedikit';
+      return 'kurang_banyak';
+    }
+
+    // ===== REKOMENDASI =====
+    function getRecommendations(entry, needs) {
+        var def = {
+            energi: Math.max(0, needs.energi - entry.kalori),
+            protein: Math.max(0, needs.protein - entry.protein),
+            serat: Math.max(0, needs.serat - entry.serat),
+            kalsium: Math.max(0, needs.kalsium - entry.kalsium)
+        };
+        
+        var recommendations = [];
+        
+        if (def.energi > 50) {
+            var porsi = Math.ceil(def.energi / 175);
+            recommendations.push({
+                icon: '🍚',
+                name: 'Nasi',
+                defisit: Math.round(def.energi) + ' kkal kurang',
+                saran: 'Tambahkan ' + porsi + ' centong nasi (+' + (porsi*175) + ' kkal)'
+            });
+        }
+        
+        if (def.protein > 5) {
+            var porsi = Math.ceil(def.protein / 15);
+            recommendations.push({
+                icon: '🍗',
+                name: 'Dada Ayam',
+                defisit: Math.round(def.protein) + ' g protein kurang',
+                saran: 'Tambahkan ' + porsi + ' potong dada ayam (+' + (porsi*15) + 'g protein)'
+            });
+        }
+        
+        if (def.serat > 3) {
+            var porsi = Math.ceil(def.serat / 3);
+            recommendations.push({
+                icon: '🥗',
+                name: 'Sayuran Hijau',
+                defisit: Math.round(def.serat) + ' g serat kurang',
+                saran: 'Tambahkan ' + porsi + ' porsi sayuran (+' + (porsi*3) + 'g serat)'
+            });
+        }
+        
+        if (def.kalsium > 100) {
+            var porsi = Math.ceil(def.kalsium / 240);
+            recommendations.push({
+                icon: '🥛',
+                name: 'Susu',
+                defisit: Math.round(def.kalsium) + ' mg kalsium kurang',
+                saran: 'Tambahkan ' + porsi + ' gelas susu (+' + (porsi*240) + 'mg kalsium)'
+            });
+        }
+        
+        if (recommendations.length === 0) {
+            recommendations.push({
+                icon: '✅',
+                name: 'Gizi Terpenuhi!',
+                defisit: '✨',
+                saran: 'Pertahankan pola makan sehat Anda!'
+            });
+        }
+        
+        return recommendations;
+    }
+
+    function showRecommendations(entry, needs) {
+        var container = document.getElementById('rekomendasiList');
+        var recoContainer = document.getElementById('rekomendasiContainer');
+        
+        if (!entry || !needs) {
+            container.innerHTML = '';
+            recoContainer.classList.remove('show');
+            return;
+        }
+        
+        recoContainer.classList.add('show');
+        
+        var recommendations = getRecommendations(entry, needs);
+        var html = '';
+        for (var i = 0; i < recommendations.length; i++) {
+            var reco = recommendations[i];
+            html += '<div class="rekomendasi-item">' +
+                '<div class="reco-icon">' + reco.icon + '</div>' +
+                '<div class="reco-info">' +
+                    '<div class="reco-name">' + reco.name + '</div>' +
+                    '<div class="reco-defisit">' + reco.defisit + '</div>' +
+                    '<div class="reco-saran">💡 ' + reco.saran + '</div>' +
+                '</div>' +
+            '</div>';
+        }
+        container.innerHTML = html;
+    }
+
+    // ========== APP STATE ==========
+    var daftarData = [];
+    var currentDaftarId = null;
+    var currentNamaDaftar = '';
+
+    // DOM refs
+    var menuView = document.getElementById('menuView');
+    var modalDaftar = document.getElementById('modalDaftar');
+    var inputNamaDaftar = document.getElementById('inputNamaDaftar');
+    var btnTambahDaftar = document.getElementById('btnTambahDaftar');
+    var btnBatalDaftar = document.getElementById('btnBatalDaftar');
+    var btnSimpanDaftar = document.getElementById('btnSimpanDaftar');
+    var recordListContainer = document.getElementById('recordListContainer');
+    var formDetailView = document.getElementById('formDetailView');
+    var formMakanView = document.getElementById('formMakanView');
+    var formMinumView = document.getElementById('formMinumView');
+    var riwayatView = document.getElementById('riwayatView');
+    var hasilView = document.getElementById('hasilView');
+    var labelNamaDaftar = document.getElementById('labelNamaDaftar');
+    var riwayatNama = document.getElementById('riwayatNama');
+    var historyListContainer = document.getElementById('historyListContainer');
+    var streakRiwayat = document.getElementById('streakRiwayat');
+    var streakRiwayatText = document.getElementById('streakRiwayatText');
+    var foodListContainer = document.getElementById('foodListContainer');
+    var foodCountBadge = document.getElementById('foodCountBadge');
+
+    var fNama = document.getElementById('fNama');
+    var fTb = document.getElementById('fTb');
+    var fBb = document.getElementById('fBb');
+    var fLila = document.getElementById('fLila');
+    var fKepala = document.getElementById('fKepala');
+    var fUmur = document.getElementById('fUmur');
+    var fJk = document.getElementById('fJk');
+    var fTanggal = document.getElementById('fTanggal');
+    var fJam = document.getElementById('fJam');
+    var fMinum = document.getElementById('fMinum');
+
+    var hasilImt = document.getElementById('hasilImt');
+    var hasilKalori = document.getElementById('hasilKalori');
+    var hasilProtein = document.getElementById('hasilProtein');
+    var hasilSerat = document.getElementById('hasilSerat');
+    var teksRekomendasiAI = document.getElementById('teksRekomendasiAI');
+    var namaOrangHasil = document.getElementById('namaOrangHasil');
+
+    var chartBMI = document.getElementById('chartBMI');
+    var chartLILA = document.getElementById('chartLILA');
+    var chartLK = document.getElementById('chartLK');
+
+    var sumKalori = document.getElementById('sumKalori');
+    var sumProtein = document.getElementById('sumProtein');
+    var sumSerat = document.getElementById('sumSerat');
+    var sumKalsium = document.getElementById('sumKalsium');
+    var statusBadge = document.getElementById('statusBadge');
+    var dailyDate = document.getElementById('dailyDate');
+
+    // ========== SET JAM OTOMATIS ==========
+    function setCurrentTime() {
+      var now = new Date();
+      var hours = String(now.getHours()).padStart(2, '0');
+      var minutes = String(now.getMinutes()).padStart(2, '0');
+      fJam.value = hours + ':' + minutes;
+    }
+    setCurrentTime();
+
+    // ========== FUNGSI MAKANAN ==========
+    function updateFoodCounter() {
+      foodCountBadge.textContent = foodListContainer.children.length + ' makanan';
+    }
+
+    function createFoodRow(name, portion, unit) {
+      if (name === undefined) name = '';
+      if (portion === undefined) portion = 1;
+      if (unit === undefined) unit = 'sendok_makan';
+      
+      var div = document.createElement('div');
+      div.className = 'food-entry';
+      div.innerHTML = '<input class="food-name" placeholder="Nama makanan" value="' + name + '" style="flex:2; min-width:70px;">' +
+        '<input class="food-portion" type="number" placeholder="2" value="' + portion + '" style="width:55px;">' +
+        '<select class="food-unit">' +
+          '<option value="sendok_makan" ' + (unit==='sendok_makan'?'selected':'') + '>sdm</option>' +
+          '<option value="sendok_teh" ' + (unit==='sendok_teh'?'selected':'') + '>sdt</option>' +
+          '<option value="centong" ' + (unit==='centong'?'selected':'') + '>centong</option>' +
+          '<option value="gram" ' + (unit==='gram'?'selected':'') + '>gram</option>' +
+          '<option value="porsi" ' + (unit==='porsi'?'selected':'') + '>porsi</option>' +
+        '</select>' +
+        '<button class="btn-add-food btn-remove-food"><i class="fas fa-minus"></i></button>';
+      
+      div.querySelector('.btn-remove-food').addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (foodListContainer.children.length > 1) {
+          div.remove();
+          updateFoodCounter();
+        } else {
+          alert('Minimal satu makanan!');
+        }
+      });
+      return div;
+    }
+
+    function addFoodRow(name, portion, unit) {
+      if (name === undefined) name = '';
+      if (portion === undefined) portion = 1;
+      if (unit === undefined) unit = 'sendok_makan';
+      var row = createFoodRow(name, portion, unit);
+      foodListContainer.appendChild(row);
+      updateFoodCounter();
+    }
+
+    document.getElementById('btnTambahMakanan').addEventListener('click', function() {
+      addFoodRow('', 1, 'sendok_makan');
+    });
+
+    // ========== FUNGSI UTAMA ==========
+    function renderDaftar() {
+      if (daftarData.length === 0) {
+        recordListContainer.innerHTML = '<div class="empty-state"><i class="fas fa-user-plus"></i> Belum ada daftar</div>';
+        return;
+      }
+      var html = '';
+      for (var i = 0; i < daftarData.length; i++) {
+        var item = daftarData[i];
+        var today = new Date().toISOString().split('T')[0];
+        var todayEntry = null;
+        if (item.history) {
+          for (var j = item.history.length - 1; j >= 0; j--) {
+            if (item.history[j].tanggal === today) {
+              todayEntry = item.history[j];
+              break;
+            }
+          }
+        }
+        var statusText = 'Belum catat';
+        var statusClass = '';
+        if (todayEntry) {
+          var statusMap = {
+            'cukup': 'badge-cukup',
+            'kurang_sedikit': 'badge-kurang_sedikit',
+            'kurang_banyak': 'badge-kurang_banyak'
+          };
+          var statusLabel = {
+            'cukup': '✅ Terpenuhi',
+            'kurang_sedikit': '🟡 Kurang',
+            'kurang_banyak': '🔴 Sangat Kurang'
+          };
+          statusClass = statusMap[todayEntry.status] || '';
+          statusText = statusLabel[todayEntry.status] || 'Belum catat';
+        }
+        
+        html += '<div class="record-item" data-id="' + item.id + '">' +
+          '<span class="nama-daftar"><i class="fas fa-user-circle" style="margin-right:8px; color:#a18cd1;"></i>' + item.nama + '</span>' +
+          '<div class="item-actions">' +
+            '<span class="badge-status ' + statusClass + '">' + statusText + '</span>' +
+            '<button class="btn-danger" data-id="' + item.id + '" data-action="delete">Hapus</button>' +
+          '</div>' +
+        '</div>';
+      }
+      recordListContainer.innerHTML = html;
+      
+      var items = document.querySelectorAll('.record-item');
+      for (var k = 0; k < items.length; k++) {
+        (function(el) {
+          el.addEventListener('click', function(e) {
+            if (e.target.closest('[data-action="delete"]')) return;
+            var id = this.dataset.id;
+            var found = null;
+            for (var m = 0; m < daftarData.length; m++) {
+              if (daftarData[m].id == id) {
+                found = daftarData[m];
+                break;
+              }
+            }
+            if (found) bukaRiwayat(found);
+          });
+        })(items[k]);
+      }
+      
+      var deleteBtns = document.querySelectorAll('[data-action="delete"]');
+      for (var l = 0; l < deleteBtns.length; l++) {
+        (function(btn) {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var id = this.dataset.id;
+            if (confirm('Hapus daftar ini dan semua riwayatnya?')) {
+              var newData = [];
+              for (var n = 0; n < daftarData.length; n++) {
+                if (daftarData[n].id != id) {
+                  newData.push(daftarData[n]);
+                }
+              }
+              daftarData = newData;
+              localStorage.setItem('mySelfData', JSON.stringify(daftarData));
+              renderDaftar();
+            }
+          });
+        })(deleteBtns[l]);
+      }
+    }
+
+    // ===== UPDATE RINGKASAN HARIAN =====
+    function updateDailySummary(data) {
+      var today = new Date().toISOString().split('T')[0];
+      dailyDate.textContent = today;
+      
+      var todayEntry = null;
+      if (data.history) {
+        for (var i = data.history.length - 1; i >= 0; i--) {
+          if (data.history[i].tanggal === today) {
+            todayEntry = data.history[i];
+            break;
+          }
+        }
+      }
+      
+      if (todayEntry) {
+        sumKalori.textContent = todayEntry.kalori || 0;
+        sumProtein.textContent = todayEntry.protein || 0;
+        sumSerat.textContent = todayEntry.serat || 0;
+        sumKalsium.textContent = todayEntry.kalsium || 0;
+        
+        var statusMap = {
+          'cukup': { text: '✅ Terpenuhi!', class: 'badge-cukup' },
+          'kurang_sedikit': { text: '🟡 Kurang Sedikit', class: 'badge-kurang_sedikit' },
+          'kurang_banyak': { text: '🔴 Sangat Kurang', class: 'badge-kurang_banyak' }
+        };
+        var info = statusMap[todayEntry.status] || statusMap['cukup'];
+        statusBadge.textContent = info.text;
+        statusBadge.className = info.class;
+        statusBadge.style.padding = '4px 16px';
+        statusBadge.style.borderRadius = '40px';
+        statusBadge.style.fontSize = '13px';
+        statusBadge.style.background = '';
+        statusBadge.style.color = '';
+      } else {
+        sumKalori.textContent = '0';
+        sumProtein.textContent = '0';
+        sumSerat.textContent = '0';
+        sumKalsium.textContent = '0';
+        statusBadge.textContent = 'Belum catat hari ini';
+        statusBadge.className = '';
+        statusBadge.style.background = 'rgba(200,180,220,0.2)';
+        statusBadge.style.padding = '4px 16px';
+        statusBadge.style.borderRadius = '40px';
+        statusBadge.style.fontSize = '13px';
+        statusBadge.style.color = '#b8a0d0';
+      }
+    }
+
+    function bukaRiwayat(data) {
+      currentDaftarId = data.id;
+      currentNamaDaftar = data.nama;
+      riwayatNama.textContent = data.nama;
+      
+      menuView.style.display = 'none';
+      formDetailView.classList.remove('active');
+      formMakanView.classList.remove('active');
+      formMinumView.classList.remove('active');
+      hasilView.classList.add('hidden');
+      riwayatView.classList.add('active');
+      
+      updateDailySummary(data);
+      renderRiwayat(data);
+    }
+
+    function renderRiwayat(data) {
+      var history = data.history || [];
+      
+      updateDynamicChart(history);
+      updateStreak(history);
+      
+      if (history.length === 0) {
+        historyListContainer.innerHTML = '<div class="empty-state" style="padding:20px;"><i class="fas fa-clock"></i> Belum ada riwayat</div>';
+        return;
+      }
+      
+      var html = '';
+      var sorted = history.slice().reverse();
+      for (var i = 0; i < sorted.length; i++) {
+        var entry = sorted[i];
+        var statusMap = {
+          'cukup': 'status-cukup',
+          'kurang_sedikit': 'status-kurang_sedikit',
+          'kurang_banyak': 'status-kurang_banyak'
+        };
+        var statusTextMap = {
+          'cukup': '✅ Cukup',
+          'kurang_sedikit': '🟡 Kurang Sedikit',
+          'kurang_banyak': '🔴 Sangat Kurang'
+        };
+        var statusClass = statusMap[entry.status] || 'status-cukup';
+        var statusText = statusTextMap[entry.status] || '✅ Cukup';
+        var foods = entry.foods ? entry.foods.map(function(f) { return f.name; }).join(', ') : '-';
+        var jam = entry.jam || '';
+        var totalMakanan = entry.foods ? entry.foods.length : 0;
+        html += '<div class="history-item" data-idx="' + i + '">' +
+          '<div class="flex-between">' +
+            '<span class="h-tanggal">📅 ' + (entry.tanggal || '-') + (jam ? ' 🕐'+jam : '') + ' (' + totalMakanan + 'x makan)' + '</span>' +
+            '<div style="display:flex; align-items:center; gap:8px;">' +
+              '<span class="h-status ' + statusClass + '">' + statusText + '</span>' +
+              '<button class="btn-danger" data-idx="' + i + '" data-action="delete-history">✕</button>' +
+            '</div>' +
+          '</div>' +
+          '<div style="font-size:12px; color:#4a2d5e; margin-top:4px;">' +
+            '🍽️ ' + foods + ' &nbsp;|&nbsp; Kalori: ' + (entry.kalori || 0) + ' kcal' +
+            ' &nbsp;|&nbsp; Protein: ' + (entry.protein || 0) + 'g' +
+          '</div>' +
+        '</div>';
+      }
+      historyListContainer.innerHTML = html;
+      
+      var deleteHistoryBtns = document.querySelectorAll('[data-action="delete-history"]');
+      for (var j = 0; j < deleteHistoryBtns.length; j++) {
+        (function(btn) {
+          btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var idx = parseInt(this.dataset.idx);
+            var target = null;
+            for (var k = 0; k < daftarData.length; k++) {
+              if (daftarData[k].id == currentDaftarId) {
+                target = daftarData[k];
+                break;
+              }
+            }
+            if (target && target.history) {
+              if (confirm('Hapus riwayat ini?')) {
+                var sortedHistory = target.history.slice().reverse();
+                var originalIdx = target.history.length - 1 - idx;
+                target.history.splice(originalIdx, 1);
+                localStorage.setItem('mySelfData', JSON.stringify(daftarData));
+                updateDailySummary(target);
+                renderRiwayat(target);
+              }
+            }
+          });
+        })(deleteHistoryBtns[j]);
+      }
+      
+      var historyItems = document.querySelectorAll('.history-item');
+      for (var l = 0; l < historyItems.length; l++) {
+        (function(item) {
+          item.addEventListener('click', function(e) {
+            if (e.target.closest('[data-action="delete-history"]')) return;
+            var idx = parseInt(this.dataset.idx);
+            var target = null;
+            for (var k = 0; k < daftarData.length; k++) {
+              if (daftarData[k].id == currentDaftarId) {
+                target = daftarData[k];
+                break;
+              }
+            }
+            if (target && target.history) {
+              var sortedHistory = target.history.slice().reverse();
+              if (sortedHistory[idx]) {
+                showDetail(sortedHistory[idx], target);
+              }
+            }
+          });
+        })(historyItems[l]);
+      }
+    }
+
+    // ===== GRAFIK DINAMIS =====
+    function updateDynamicChart(history) {
+      if (!history || history.length === 0) {
+        chartBMI.style.width = '0%';
+        chartBMI.textContent = '--';
+        chartLILA.style.width = '0%';
+        chartLILA.textContent = '--';
+        chartLK.style.width = '0%';
+        chartLK.textContent = '--';
+        return;
+      }
+
+      var last30 = history.slice(-30);
+      
+      var bmiVals = [];
+      var lilaVals = [];
+      var kepalaVals = [];
+      for (var i = 0; i < last30.length; i++) {
+        bmiVals.push(parseFloat(last30[i].imt) || 20);
+        if (parseFloat(last30[i].lila) > 0) lilaVals.push(parseFloat(last30[i].lila));
+        if (parseFloat(last30[i].kepala) > 0) kepalaVals.push(parseFloat(last30[i].kepala));
+      }
+      
+      var sumBmi = 0;
+      for (var j = 0; j < bmiVals.length; j++) sumBmi += bmiVals[j];
+      var avgBmi = bmiVals.length > 0 ? sumBmi / bmiVals.length : 20;
+      
+      var sumLila = 0;
+      for (var k = 0; k < lilaVals.length; k++) sumLila += lilaVals[k];
+      var avgLila = lilaVals.length > 0 ? sumLila / lilaVals.length : 0;
+      
+      var sumKepala = 0;
+      for (var l = 0; l < kepalaVals.length; l++) sumKepala += kepalaVals[l];
+      var avgKepala = kepalaVals.length > 0 ? sumKepala / kepalaVals.length : 0;
+      
+      var bmiPercent = Math.min(100, ((avgBmi - 10) / 20) * 100);
+      bmiPercent = Math.max(5, bmiPercent);
+      
+      var lilaPercent = avgLila > 0 ? Math.min(100, (avgLila / 35) * 100) : 0;
+      lilaPercent = Math.max(0, lilaPercent);
+      
+      var kepalaPercent = avgKepala > 0 ? Math.min(100, ((avgKepala - 30) / 30) * 100) : 0;
+      kepalaPercent = Math.max(0, Math.min(100, kepalaPercent));
+
+      setTimeout(function() {
+        chartBMI.style.width = bmiPercent + '%';
+        chartBMI.textContent = avgBmi.toFixed(1);
+        chartBMI.className = 'chart-line-fill ' + (avgBmi >= 18.5 && avgBmi <= 24.9 ? 'green' : avgBmi < 18.5 ? 'yellow' : 'red');
+        
+        chartLILA.style.width = lilaPercent + '%';
+        chartLILA.textContent = avgLila > 0 ? avgLila.toFixed(1) : '--';
+        chartLILA.className = 'chart-line-fill ' + (avgLila >= 22 ? 'green' : avgLila > 18 ? 'yellow' : 'red');
+        
+        chartLK.style.width = kepalaPercent + '%';
+        chartLK.textContent = avgKepala > 0 ? avgKepala.toFixed(1) : '--';
+        chartLK.className = 'chart-line-fill ' + (avgKepala >= 45 && avgKepala <= 55 ? 'green' : avgKepala > 40 ? 'yellow' : 'red');
+      }, 100);
+    }
+
+    // ===== STREAK =====
+    function updateStreak(history) {
+      if (history.length === 0) {
+        streakRiwayat.classList.add('hidden');
+        return;
+      }
+      
+      var streak = 0;
+      var sorted = history.slice().reverse();
+      for (var i = 0; i < sorted.length; i++) {
+        if (sorted[i].status === 'cukup') {
+          streak++;
+        } else {
+          break;
+        }
+      }
+      
+      if (streak >= 2) {
+        streakRiwayat.classList.remove('hidden');
+        streakRiwayatText.textContent = 'Streak: ' + streak + ' hari berturut-turut!';
+      } else {
+        streakRiwayat.classList.add('hidden');
+      }
+    }
+
+    // ===== SHOW DETAIL =====
+    function showDetail(entry, target) {
+      hasilImt.textContent = entry.imt || '-';
+      hasilKalori.textContent = entry.kalori || 0;
+      hasilProtein.textContent = entry.protein || 0;
+      hasilSerat.textContent = entry.serat || 0;
+      namaOrangHasil.textContent = target.nama;
+      
+      var needs = entry.needs || getAKG(entry.umur || 25, entry.jk || 'L');
+      
+      showRecommendations(entry, needs);
+      
+      var status = entry.status || 'cukup';
+      if (status === 'cukup') {
+        teksRekomendasiAI.textContent = '✨ Semua gizi tercukupi! Pertahankan pola makan sehat.';
+      } else if (status === 'kurang_sedikit') {
+        teksRekomendasiAI.textContent = '🟡 Ada beberapa nutrisi yang perlu ditambahkan. Lihat daftar di bawah.';
+      } else {
+        teksRekomendasiAI.textContent = '🔴 Banyak nutrisi yang kurang. Segera tingkatkan asupan makanan bergizi!';
+      }
+      
+      riwayatView.classList.remove('active');
+      hasilView.classList.remove('hidden');
+    }
+
+    // ========== KONVERSI PORSI ==========
+    function konversiPorsi(nilai, satuan) {
+      var map = { 'sendok_makan': 15, 'sendok_teh': 5, 'centong': 50, 'gram': 1, 'porsi': 150 };
+      return nilai * (map[satuan] || 1);
+    }
+
+    function getFoodData() {
+      var foods = [];
+      var rows = foodListContainer.querySelectorAll('.food-entry');
+      for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        var name = row.querySelector('.food-name').value.trim() || 'Makanan';
+        var portion = parseFloat(row.querySelector('.food-portion').value) || 1;
+        var unit = row.querySelector('.food-unit').value;
+        foods.push({ name: name, portion: portion, unit: unit });
+      }
+      return foods;
+    }
+
+    // ========== SIMPAN DATA (AKUMULASI HARIAN + LANGSUNG KEMBALI KE RIWAYAT) ==========
+    function simpanData() {
+      var namaLengkap = fNama.value.trim() || 'Tidak diketahui';
+      var tb = parseFloat(fTb.value) || 0;
+      var bb = parseFloat(fBb.value) || 0;
+      var lila = parseFloat(fLila.value) || 0;
+      var kepala = parseFloat(fKepala.value) || 0;
+      var umur = parseInt(fUmur.value) || 0;
+      var jk = fJk.value;
+      var tanggal = fTanggal.value || new Date().toISOString().split('T')[0];
+      var jam = fJam.value || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      var minum = parseFloat(fMinum.value) || 0;
+
+      if (!tb || !bb) {
+        alert('⚠️ TB dan BB wajib diisi!');
+        return;
+      }
+
+      var foodEntries = getFoodData();
+      var totalGram = 0;
+      for (var i = 0; i < foodEntries.length; i++) {
+        totalGram += konversiPorsi(foodEntries[i].portion, foodEntries[i].unit);
+      }
+
+      var kalori = Math.round(totalGram * 1.8 + 50);
+      var protein = Math.round(totalGram * 0.12 + 3);
+      var serat = Math.round(totalGram * 0.04 + 1);
+      var kalsium = Math.round(totalGram * 0.3 + 20);
+      var imt = tb > 0 ? (bb / ((tb/100)*(tb/100))).toFixed(1) : '0';
+
+      var needs = getAKG(umur, jk);
+
+      var target = null;
+      for (var k = 0; k < daftarData.length; k++) {
+        if (daftarData[k].id == currentDaftarId) {
+          target = daftarData[k];
+          break;
+        }
+      }
+
+      if (target) {
+        target.namaLengkap = namaLengkap;
+        target.tb = tb;
+        target.bb = bb;
+        if (lila) target.lila = lila;
+        if (kepala) target.kepala = kepala;
+        target.umur = umur;
+        target.jk = jk;
+        target.tanggal = tanggal;
+
+        if (!target.history) target.history = [];
+
+        var existingIndex = -1;
+        for (var m = 0; m < target.history.length; m++) {
+          if (target.history[m].tanggal === tanggal) {
+            existingIndex = m;
+            break;
+          }
+        }
+
+        if (existingIndex !== -1) {
+          var existing = target.history[existingIndex];
+          var allFoods = existing.foods || [];
+          for (var n = 0; n < foodEntries.length; n++) {
+            allFoods.push(foodEntries[n]);
+          }
+          existing.foods = allFoods;
+          existing.kalori = (existing.kalori || 0) + kalori;
+          existing.protein = (existing.protein || 0) + protein;
+          existing.serat = (existing.serat || 0) + serat;
+          existing.kalsium = (existing.kalsium || 0) + kalsium;
+          existing.minum = (existing.minum || 0) + minum;
+          existing.tb = tb;
+          existing.bb = bb;
+          existing.imt = imt;
+          
+          var statusKalori = getStatus(existing.kalori, needs.energi);
+          var statusProtein = getStatus(existing.protein, needs.protein);
+          var statusSerat = getStatus(existing.serat, needs.serat);
+          var statusKalsium = getStatus(existing.kalsium, needs.kalsium);
+          var statusPriority = { 'cukup': 0, 'kurang_sedikit': 1, 'kurang_banyak': 2 };
+          var statuses = [statusKalori, statusProtein, statusSerat, statusKalsium];
+          var worstStatus = 'cukup';
+          var worstPriority = 0;
+          for (var p = 0; p < statuses.length; p++) {
+            if (statusPriority[statuses[p]] > worstPriority) {
+              worstPriority = statusPriority[statuses[p]];
+              worstStatus = statuses[p];
+            }
+          }
+          existing.status = worstStatus;
+          existing.needs = needs;
+          existing.umur = umur;
+          existing.jk = jk;
+          existing.jam = jam;
+        } else {
+          var statusKalori = getStatus(kalori, needs.energi);
+          var statusProtein = getStatus(protein, needs.protein);
+          var statusSerat = getStatus(serat, needs.serat);
+          var statusKalsium = getStatus(kalsium, needs.kalsium);
+          var statusPriority = { 'cukup': 0, 'kurang_sedikit': 1, 'kurang_banyak': 2 };
+          var statuses = [statusKalori, statusProtein, statusSerat, statusKalsium];
+          var worstStatus = 'cukup';
+          var worstPriority = 0;
+          for (var q = 0; q < statuses.length; q++) {
+            if (statusPriority[statuses[q]] > worstPriority) {
+              worstPriority = statusPriority[statuses[q]];
+              worstStatus = statuses[q];
+            }
+          }
+
+          var newEntry = {
+            tanggal: tanggal,
+            jam: jam,
+            foods: foodEntries,
+            minum: minum,
+            tb: tb,
+            bb: bb,
+            lila: lila || undefined,
+            kepala: kepala || undefined,
+            imt: imt,
+            kalori: kalori,
+            protein: protein,
+            serat: serat,
+            kalsium: kalsium,
+            status: worstStatus,
+            needs: needs,
+            umur: umur,
+            jk: jk
+          };
+          target.history.push(newEntry);
+        }
+
+        if (target.history.length > 100) {
+          target.history = target.history.slice(-100);
+        }
+
+        localStorage.setItem('mySelfData', JSON.stringify(daftarData));
+
+        // ===== LANGSUNG KEMBALI KE RIWAYAT =====
+        alert('✅ Data berhasil ditambahkan! (Akumulasi harian)');
+        
+        // Reset form untuk input berikutnya
+        fMinum.value = 0;
+        foodListContainer.innerHTML = '';
+        addFoodRow('', 1, 'sendok_makan');
+        setCurrentTime();
+        
+        // Sembunyikan form, tampilkan riwayat
+        formDetailView.classList.remove('active');
+        formMakanView.classList.remove('active');
+        formMinumView.classList.remove('active');
+        hasilView.classList.add('hidden');
+        riwayatView.classList.add('active');
+        
+        // Update tampilan riwayat
+        updateDailySummary(target);
+        renderRiwayat(target);
+      }
+    }
+
+    // ========== EVENT LISTENERS ==========
+    document.getElementById('btnKeFormMakan').addEventListener('click', function() {
+      formDetailView.classList.remove('active');
+      formMakanView.classList.add('active');
+      formMinumView.classList.remove('active');
+      riwayatView.classList.remove('active');
+      hasilView.classList.add('hidden');
+    });
+    
+    document.getElementById('btnKembaliIdentitas').addEventListener('click', function() {
+      formMakanView.classList.remove('active');
+      formDetailView.classList.add('active');
+      formMinumView.classList.remove('active');
+      riwayatView.classList.remove('active');
+      hasilView.classList.add('hidden');
+    });
+    
+    document.getElementById('btnKeMinum').addEventListener('click', function() {
+      formMakanView.classList.remove('active');
+      formMinumView.classList.add('active');
+    });
+    
+    document.getElementById('btnKembaliMakanan').addEventListener('click', function() {
+      formMinumView.classList.remove('active');
+      formMakanView.classList.add('active');
+    });
+    
+    document.getElementById('btnSimpanData').addEventListener('click', simpanData);
+    
+    document.getElementById('btnKembaliMenuRiwayat').addEventListener('click', function() {
+      riwayatView.classList.remove('active');
+      menuView.style.display = 'block';
+      renderDaftar();
+    });
+    
+    document.getElementById('btnKembaliRiwayat').addEventListener('click', function() {
+      hasilView.classList.add('hidden');
+      var target = null;
+      for (var k = 0; k < daftarData.length; k++) {
+        if (daftarData[k].id == currentDaftarId) {
+          target = daftarData[k];
+          break;
+        }
+      }
+      if (target) {
+        riwayatView.classList.add('active');
+        updateDailySummary(target);
+        renderRiwayat(target);
+      }
+    });
+    
+    document.getElementById('btnTambahRiwayat').addEventListener('click', function() {
+      fTanggal.value = new Date().toISOString().split('T')[0];
+      setCurrentTime();
+      fMinum.value = 0;
+      foodListContainer.innerHTML = '';
+      addFoodRow('', 1, 'sendok_makan');
+      
+      riwayatView.classList.remove('active');
+      formDetailView.classList.add('active');
+      formMakanView.classList.remove('active');
+      formMinumView.classList.remove('active');
+      hasilView.classList.add('hidden');
+    });
+
+    // Modal
+    btnTambahDaftar.addEventListener('click', function() {
+      modalDaftar.style.display = 'flex';
+      inputNamaDaftar.value = 'Orang ' + (daftarData.length+1);
+    });
+    
+    btnBatalDaftar.addEventListener('click', function() {
+      modalDaftar.style.display = 'none';
+    });
+    
+    btnSimpanDaftar.addEventListener('click', function() {
+      var nama = inputNamaDaftar.value.trim() || 'Tanpa nama';
+      var newId = Date.now() + Math.random() * 1000;
+      var newItem = {
+        id: newId,
+        nama: nama,
+        namaLengkap: '',
+        tb: '',
+        bb: '',
+        lila: '',
+        kepala: '',
+        umur: '',
+        jk: 'L',
+        tanggal: '',
+        history: []
+      };
+      daftarData.push(newItem);
+      localStorage.setItem('mySelfData', JSON.stringify(daftarData));
+      renderDaftar();
+      modalDaftar.style.display = 'none';
+      bukaRiwayat(newItem);
+    });
+    
+    modalDaftar.addEventListener('click', function(e) {
+      if (e.target === modalDaftar) modalDaftar.style.display = 'none';
+    });
+
+    // ========== LOAD DATA ==========
+    function loadData() {
+      var saved = localStorage.getItem('mySelfData');
+      if (saved) {
+        try {
+          daftarData = JSON.parse(saved);
+        } catch(e) {
+          daftarData = [];
+        }
+      }
+      
+      if (daftarData.length === 0) {
+        var sampleId = Date.now() + 1;
+        var sample = {
+          id: sampleId,
+          nama: 'Ananda',
+          namaLengkap: 'Ananda Putri',
+          tb: 165,
+          bb: 58,
+          lila: 24,
+          kepala: 52,
+          umur: 28,
+          jk: 'P',
+          tanggal: '2026-06-22',
+          history: [
+            { 
+              tanggal: '2026-06-20', 
+              jam: '07:30', 
+              foods: [{name:'Nasi', portion:2, unit:'sendok_makan'}, {name:'Telur', portion:2, unit:'porsi'}], 
+              minum: 500, 
+              tb: 165, bb: 57, lila: 23, kepala: 51, 
+              imt: '20.9', 
+              kalori: 430, protein: 32, serat: 10, kalsium: 150, 
+              status: 'cukup', 
+              needs: { energi: 2250, protein: 60, serat: 32, kalsium: 1100, air: 2350 }, 
+              umur: 28, jk: 'P' 
+            },
+            { 
+              tanggal: '2026-06-21', 
+              jam: '12:15', 
+              foods: [{name:'Nasi', portion:1, unit:'sendok_makan'}, {name:'Ayam', portion:1, unit:'porsi'}], 
+              minum: 600, 
+              tb: 165, bb: 58, lila: 24, kepala: 52, 
+              imt: '21.3', 
+              kalori: 480, protein: 38, serat: 12, kalsium: 180, 
+              status: 'cukup', 
+              needs: { energi: 2250, protein: 60, serat: 32, kalsium: 1100, air: 2350 }, 
+              umur: 28, jk: 'P' 
+            },
+            { 
+              tanggal: '2026-06-22', 
+              jam: '07:20', 
+              foods: [{name:'Nasi', portion:2, unit:'sendok_makan'}, {name:'Ikan', portion:1, unit:'porsi'}, {name:'Brokoli', portion:1, unit:'centong'}], 
+              minum: 700, 
+              tb: 165, bb: 58, lila: 24, kepala: 52, 
+              imt: '21.3', 
+              kalori: 490, protein: 38, serat: 16, kalsium: 200, 
+              status: 'cukup', 
+              needs: { energi: 2250, protein: 60, serat: 32, kalsium: 1100, air: 2350 }, 
+              umur: 28, jk: 'P' 
+            }
+          ]
+        };
+        daftarData.push(sample);
+        localStorage.setItem('mySelfData', JSON.stringify(daftarData));
+      }
+      
+      renderDaftar();
+    }
+
+    loadData();
+  })();
+</script>
+</body>
+</html>
